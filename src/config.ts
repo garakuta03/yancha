@@ -76,8 +76,9 @@ function parseLlmProvider(value: string): LlmProvider {
 
 function defaultModelFor(provider: LlmProvider): string {
   if (provider === "gemini") {
-    // gemini-1.5系は2026年に完全終了(404)。無料枠で使える2.5 Flashを既定にする
-    return "gemini-2.5-flash";
+    // gemini-1.5系は終了、2.5-flashも新規キーでは404(not available to new users)。
+    // 疎通確認済みの3.x flashを既定にする
+    return "gemini-3.5-flash";
   }
   if (provider === "openai") {
     return "";
