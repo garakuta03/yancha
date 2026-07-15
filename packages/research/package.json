@@ -1,0 +1,25 @@
+{
+  "name": "@yancha/research",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test": "vitest run",
+    "build": "tsc --noEmit",
+    "research": "tsx src/cli.ts"
+  },
+  "dependencies": {
+    "@hono/node-server": "^1.13.0",
+    "@yancha/core": "workspace:*",
+    "better-sqlite3": "^12.11.1",
+    "hono": "^4.6.0",
+    "yaml": "^2.5.0"
+  },
+  "devDependencies": {
+    "@types/better-sqlite3": "^7.6.11",
+    "@types/node": "^20.14.12",
+    "tsx": "^4.16.2",
+    "typescript": "^5.5.4",
+    "vitest": "^4.1.10"
+  }
+}

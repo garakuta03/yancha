@@ -2,7 +2,7 @@ import { mkdtemp, readFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import type { LlmClient } from "../src/clients/llm.js";
-import { writeJson } from "../src/io/json.js";
+import { writeJson } from "@yancha/core";
 import { ScriptStage } from "../src/stages/script.js";
 import type { StageArtifact, ThemeData } from "../src/types/pipeline.js";
 

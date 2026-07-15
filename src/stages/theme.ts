@@ -1,5 +1,5 @@
 import { join } from "node:path";
-import { writeJson } from "../io/json.js";
+import { writeJson } from "@yancha/core";
 import type { StageArtifact, StageRunner, ThemeData } from "../types/pipeline.js";
 
 export class ThemeStage implements StageRunner {

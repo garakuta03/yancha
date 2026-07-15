@@ -1,5 +1,5 @@
 import { loadConfig } from "../src/config.js";
-import { YanchaError } from "../src/errors.js";
+import { YanchaError } from "@yancha/core";
 
 describe("loadConfig", () => {
   test("mock設定はAPIキーなしで読み込める", () => {

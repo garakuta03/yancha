@@ -1,4 +1,4 @@
-import { YanchaError } from "../errors.js";
+import { YanchaError } from "@yancha/core";
 
 const prohibitedPatterns: readonly RegExp[] = [
   /治(る|します|せる)/u,

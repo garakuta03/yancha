@@ -1,4 +1,4 @@
-import { YanchaError } from "../errors.js";
+import { YanchaError } from "@yancha/core";
 
 export interface TtsClient {
   synthesize(): Promise<never>;

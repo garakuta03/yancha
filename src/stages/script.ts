@@ -3,7 +3,7 @@ import type { LlmClient } from "../clients/llm.js";
 import { assertSafeScriptText } from "./scriptPolicy.js";
 import { buildScriptPrompt, scriptSystemPrompt } from "./scriptPrompt.js";
 import { createInitialLicense, writeLicenseJson } from "../license.js";
-import { readJson, writeJson } from "../io/json.js";
+import { readJson, writeJson } from "@yancha/core";
 import { writeText } from "../io/files.js";
 import type { ScriptData, StageArtifact, StageRunner, ThemeData } from "../types/pipeline.js";
 

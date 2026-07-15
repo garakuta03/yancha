@@ -1,5 +1,5 @@
 import { join } from "node:path";
-import { writeJson } from "../io/json.js";
+import { writeJson } from "@yancha/core";
 import type { PlaceholderData, StageArtifact, StageId, StageRunner } from "../types/pipeline.js";
 
 export class PlaceholderStage implements StageRunner {

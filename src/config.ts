@@ -1,5 +1,5 @@
-import { YanchaError } from "./errors.js";
-import type { LogLevel } from "./logger.js";
+import { YanchaError } from "@yancha/core";
+import type { LogLevel } from "@yancha/core";
 
 export type LlmProvider = "mock" | "openai" | "gemini";
 

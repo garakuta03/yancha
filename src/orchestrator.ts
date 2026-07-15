@@ -1,7 +1,6 @@
 import { mkdir } from "node:fs/promises";
-import { join } from "node:path";
 import type { AppConfig } from "./config.js";
-import type { Logger } from "./logger.js";
+import type { Logger } from "@yancha/core";
 import { resolveVideoPaths } from "./paths.js";
 import type { StageArtifact, StageId, StageRunner } from "./types/pipeline.js";
 

@@ -3,5 +3,6 @@ dist/
 coverage/
 .env
 assets/
+research-data/
 .DS_Store
 *.log

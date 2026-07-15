@@ -1,5 +1,5 @@
 import type { AppConfig } from "../config.js";
-import { YanchaError } from "../errors.js";
+import { YanchaError } from "@yancha/core";
 
 export interface LlmMessage {
   readonly role: "system" | "user";

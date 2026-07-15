@@ -1,5 +1,5 @@
 import { join } from "node:path";
-import { writeJson } from "./io/json.js";
+import { writeJson } from "@yancha/core";
 
 export interface LicenseEntry {
   readonly assetType: "script" | "narration" | "music" | "ambient" | "visual" | "video" | "metadata";
