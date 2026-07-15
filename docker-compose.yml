@@ -1,0 +1,28 @@
+services:
+  runner:
+    build: .
+    working_dir: /app
+    environment:
+      YANCHA_LOG_LEVEL: ${YANCHA_LOG_LEVEL:-info}
+      YANCHA_ASSETS_DIR: ${YANCHA_ASSETS_DIR:-assets}
+      YANCHA_LLM_PROVIDER: ${YANCHA_LLM_PROVIDER:-mock}
+      YANCHA_LLM_MODEL: ${YANCHA_LLM_MODEL:-local-mock}
+      GEMINI_API_KEY: ${GEMINI_API_KEY:-}
+      OPENAI_API_KEY: ${OPENAI_API_KEY:-}
+      COMFYUI_BASE_URL: ${COMFYUI_BASE_URL:-http://host.docker.internal:8188}
+      FFMPEG_PATH: ${FFMPEG_PATH:-ffmpeg}
+    volumes:
+      - ./assets:/app/assets
+    command: ["pnpm", "run", "pipeline"]
+
+  ffmpeg:
+    build: .
+    working_dir: /app
+    volumes:
+      - ./assets:/app/assets
+    entrypoint: ["ffmpeg"]
+    command: ["-version"]
+
+  # 将来のGPU生成はComfyUIをHTTP APIサーバーとして別サービス化する。
+  # Apple Silicon/Macのフェーズ0ではホスト側ComfyUIを使い、GPUパススルー設定は入れない。
+  # Linux/NVIDIA移行時に deploy.resources.reservations.devices を追加する。
