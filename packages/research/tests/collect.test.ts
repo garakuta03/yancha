@@ -9,6 +9,9 @@ const fakeClient: YoutubeClient = {
   async fetchChannels(ids) {
     return ids.map((id) => ({ channelId: id, title: "眠り", subscriberCount: 1000, viewCount: 50000, videoCount: 2, capturedAt: "2026-07-16T00:00:00.000Z" }));
   },
+  async searchChannels() {
+    return [];
+  },
   async fetchUploadsPlaylistId() {
     return "PLuploads";
   },

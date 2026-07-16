@@ -1,7 +1,7 @@
 import { mkdtemp, readFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { addLedgerEntry, parseChannelId, readLedger } from "../src/ledger.js";
+import { activeLedgerEntries, addLedgerEntry, parseChannelId, readLedger, retireLedgerEntry } from "../src/ledger.js";
 
 describe("parseChannelId", () => {
   test("channel URLからIDを抽出する", () => {
@@ -34,5 +34,25 @@ describe("ledger 読み書き", () => {
     expect(reloaded[0]?.channelId).toBe("UCaaa");
     expect(reloaded[0]?.note).toBe("睡眠系大手");
     expect((await readFile(path, "utf8")).length).toBeGreaterThan(0);
+  });
+});
+
+describe("台帳の出自・退役", () => {
+  test("addは既定でsource=manualを付与する", async () => {
+    const dir = await mkdtemp(join(tmpdir(), "ledger-"));
+    const path = join(dir, "ledger.yaml");
+    const after = await addLedgerEntry(path, { channelId: "UCm", note: "", tags: [] });
+    expect(after[0]?.source).toBe("manual");
+  });
+
+  test("retireはretiredAtを付け、activeLedgerEntriesで除外される", async () => {
+    const dir = await mkdtemp(join(tmpdir(), "ledger-"));
+    const path = join(dir, "ledger.yaml");
+    await addLedgerEntry(path, { channelId: "UCa", note: "", tags: [] });
+    await addLedgerEntry(path, { channelId: "UCb", note: "", tags: [] });
+    const afterRetire = await retireLedgerEntry(path, "UCa");
+    const retired = afterRetire.find((entry) => entry.channelId === "UCa");
+    expect(retired?.retiredAt).toBeTruthy();
+    expect(activeLedgerEntries(afterRetire).map((entry) => entry.channelId)).toEqual(["UCb"]);
   });
 });

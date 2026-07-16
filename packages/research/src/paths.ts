@@ -4,6 +4,8 @@ import type { ResearchConfig } from "./config.js";
 export interface ResearchPaths {
   readonly dataDir: string;
   readonly ledgerYaml: string;
+  readonly keywordsYaml: string;
+  readonly candidatesYaml: string;
   readonly snapshotsDir: string;
   readonly dbFile: string;
 }
@@ -13,6 +15,8 @@ export function resolveResearchPaths(config: ResearchConfig): ResearchPaths {
   return {
     dataDir,
     ledgerYaml: resolve(dataDir, "ledger.yaml"),
+    keywordsYaml: resolve(dataDir, "keywords.yaml"),
+    candidatesYaml: resolve(dataDir, "candidates.yaml"),
     snapshotsDir: resolve(dataDir, "snapshots"),
     dbFile: resolve(dataDir, "data.db")
   };

@@ -50,3 +50,24 @@ describe("createYoutubeClient.fetchChannels", () => {
     await expect(client.fetchChannels(["UCaaa"])).rejects.toThrow(/403/);
   });
 });
+
+describe("createYoutubeClient.searchChannels", () => {
+  test("type=channel/q/relevanceLanguage/regionCode を付けてchannelIdを返す", async () => {
+    let calledUrl = "";
+    const fakeFetch: typeof fetch = async (input) => {
+      calledUrl = String(input);
+      return new Response(JSON.stringify({
+        items: [
+          { id: { kind: "youtube#channel", channelId: "UCsleep" }, snippet: { title: "眠れるCH" } }
+        ]
+      }), { status: 200 });
+    };
+    const client = createYoutubeClient(config, fakeFetch);
+    const results = await client.searchChannels("睡眠導入", { relevanceLanguage: "ja", regionCode: "JP" });
+    expect(calledUrl).toContain("/search");
+    expect(calledUrl).toContain("type=channel");
+    expect(calledUrl).toContain("relevanceLanguage=ja");
+    expect(calledUrl).toContain("regionCode=JP");
+    expect(results).toEqual([{ channelId: "UCsleep", title: "眠れるCH" }]);
+  });
+});

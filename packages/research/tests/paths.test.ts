@@ -17,6 +17,12 @@ describe("resolveResearchPaths", () => {
     expect(paths.dbFile).toBe(resolve("research-data", "data.db"));
   });
 
+  test("候補とキーワードのパスを解決する", () => {
+    const paths = resolveResearchPaths(config);
+    expect(paths.keywordsYaml).toBe(resolve("research-data", "keywords.yaml"));
+    expect(paths.candidatesYaml).toBe(resolve("research-data", "candidates.yaml"));
+  });
+
   test("snapshotDirForはタイムスタンプでコロンを除去したディレクトリを返す", () => {
     const dir = snapshotDirFor(config, "2026-07-16T09:30:00.000Z");
     expect(dir).toBe(resolve("research-data", "snapshots", "2026-07-16T093000.000Z"));

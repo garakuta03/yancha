@@ -37,8 +37,26 @@ export async function addLedgerEntry(ledgerYamlPath: string, entry: LedgerEntry)
     return current;
   }
 
-  const next = [...current, { ...entry, addedAt: entry.addedAt ?? new Date().toISOString() }];
+  const next = [...current, { ...entry, source: entry.source ?? "manual", addedAt: entry.addedAt ?? new Date().toISOString() }];
   await mkdir(dirname(ledgerYamlPath), { recursive: true });
   await writeFile(ledgerYamlPath, stringify({ channels: next }), "utf8");
   return next;
+}
+
+export async function retireLedgerEntry(ledgerYamlPath: string, channelId: string): Promise<LedgerEntry[]> {
+  const current = await readLedger(ledgerYamlPath);
+  if (!current.some((entry) => entry.channelId === channelId)) {
+    throw new YanchaError("CONFIG_INVALID", `台帳に存在しないchannelIdです: ${channelId}`);
+  }
+
+  const next = current.map((entry) =>
+    entry.channelId === channelId && !entry.retiredAt ? { ...entry, retiredAt: new Date().toISOString() } : entry
+  );
+  await mkdir(dirname(ledgerYamlPath), { recursive: true });
+  await writeFile(ledgerYamlPath, stringify({ channels: next }), "utf8");
+  return next;
+}
+
+export function activeLedgerEntries(entries: readonly LedgerEntry[]): LedgerEntry[] {
+  return entries.filter((entry) => !entry.retiredAt);
 }

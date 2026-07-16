@@ -3,6 +3,30 @@ export interface LedgerEntry {
   readonly note: string;
   readonly tags: readonly string[];
   readonly addedAt?: string;
+  readonly source?: "manual" | "discovered";
+  readonly approvedAt?: string;
+  readonly retiredAt?: string;
+}
+
+export interface Candidate {
+  readonly channelId: string;
+  readonly title: string;
+  readonly subscriberCount: number;
+  readonly matchedKeywords: readonly string[];
+  readonly discoveredAt: string;
+}
+
+export interface KeywordsSettings {
+  readonly minSubscribers: number;
+  readonly maxCandidatesPerRun: number;
+  readonly relevanceLanguage: string;
+  readonly regionCode: string;
+  readonly quotaGuardUnits: number;
+}
+
+export interface KeywordsFile {
+  readonly keywords: readonly string[];
+  readonly settings: KeywordsSettings;
 }
 
 export interface ChannelSnapshot {

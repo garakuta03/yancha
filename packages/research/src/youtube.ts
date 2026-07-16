@@ -4,9 +4,16 @@ import type { ChannelSnapshot, VideoSnapshot } from "./types.js";
 
 export interface YoutubeClient {
   fetchChannels(channelIds: readonly string[]): Promise<ChannelSnapshot[]>;
+  searchChannels(keyword: string, options: SearchOptions): Promise<{ channelId: string; title: string }[]>;
   fetchUploadsPlaylistId(channelId: string): Promise<string>;
   fetchRecentVideoIds(playlistId: string, max: number): Promise<string[]>;
   fetchVideos(videoIds: readonly string[]): Promise<VideoSnapshot[]>;
+}
+
+export interface SearchOptions {
+  readonly relevanceLanguage: string;
+  readonly regionCode: string;
+  readonly maxResults?: number;
 }
 
 export function parseIsoDurationToSeconds(iso: string): number {
@@ -56,6 +63,21 @@ export function createYoutubeClient(config: ResearchConfig, fetchImpl: typeof fe
         videoCount: Number(item.statistics?.videoCount ?? 0),
         capturedAt
       }));
+    },
+
+    async searchChannels(keyword, options) {
+      const json = await getJson("search", {
+        part: "snippet",
+        type: "channel",
+        q: keyword,
+        maxResults: String(options.maxResults ?? 50),
+        relevanceLanguage: options.relevanceLanguage,
+        regionCode: options.regionCode
+      }) as YoutubeSearchResponse;
+
+      return (json.items ?? [])
+        .map((item) => ({ channelId: item.id?.channelId ?? "", title: item.snippet?.title ?? "" }))
+        .filter((result): result is { channelId: string; title: string } => result.channelId.length > 0);
     },
 
     async fetchUploadsPlaylistId(channelId) {
@@ -123,6 +145,17 @@ interface YoutubeChannelsResponse {
       readonly relatedPlaylists?: {
         readonly uploads?: string;
       };
+    };
+  }[];
+}
+
+interface YoutubeSearchResponse {
+  readonly items?: readonly {
+    readonly id?: {
+      readonly channelId?: string;
+    };
+    readonly snippet?: {
+      readonly title?: string;
     };
   }[];
 }

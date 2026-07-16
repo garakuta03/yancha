@@ -1,0 +1,13 @@
+# research discover が読むキーワード台帳のサンプル。
+# 実運用では research-data/keywords.yaml にコピーして編集する。
+keywords:
+  - 睡眠導入
+  - ヒーリング 音楽
+  - ボディスキャン 瞑想
+  - 睡眠 BGM
+settings:
+  minSubscribers: 100
+  maxCandidatesPerRun: 30
+  relevanceLanguage: ja
+  regionCode: JP
+  quotaGuardUnits: 3000
