@@ -8,13 +8,13 @@
     "build": "tsc --noEmit",
     "test": "vitest run",
     "test:watch": "vitest",
-    "pipeline": "tsx src/cli.ts pipeline",
-    "research": "tsx packages/research/src/cli.ts",
-    "stage": "tsx src/cli.ts stage",
-    "stage:script": "tsx src/cli.ts stage:script"
+    "pipeline": "tsx --env-file-if-exists=.env src/cli.ts pipeline",
+    "research": "tsx --env-file-if-exists=.env packages/research/src/cli.ts",
+    "stage": "tsx --env-file-if-exists=.env src/cli.ts stage",
+    "stage:script": "tsx --env-file-if-exists=.env src/cli.ts stage:script"
   },
   "engines": {
-    "node": ">=20.0.0",
+    "node": ">=20.18.0",
     "pnpm": ">=11.0.0"
   },
   "dependencies": {

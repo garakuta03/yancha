@@ -2,6 +2,7 @@ node_modules/
 dist/
 coverage/
 .env
+.envrc
 assets/
 research-data/
 .DS_Store

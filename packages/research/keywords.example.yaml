@@ -1,13 +1,45 @@
 # research discover が読むキーワード台帳のサンプル。
-# 実運用では research-data/keywords.yaml にコピーして編集する。
+# 実運用では research-data/keywords.yaml にコピーして編集する（research-data/ は .gitignore 済み）。
+#
+# 目的: 設計 §3 の3ニッチ候補を定量検証し、主軸ニッチを1つに絞る。
+# 参照: docs/design/2026-07-16-ノーボイス全生成・vps配信基盤設計.md §3
+#
+# ⚠️ キーワードは29個までに抑えること。
+#    Issue #30 のとおり quotaGuardUnits(3000) と estimateSearchUnits(件数*100) の比較が
+#    実態と合っていない。実際の制約は search.list の 100回/日
+#    （2026-06-01の改定で専用バケット化され、10,000ユニット枠を消費しなくなった）。
+
 keywords:
-  - 睡眠導入
-  - ヒーリング 音楽
-  - ボディスキャン 瞑想
-  - 睡眠 BGM
+  # --- 候補A: TRPG/ファンタジー環境音 ---
+  # 日本語圏ほぼ空白なのに国内TRPG人口大。シーン定義がプロシージャルのパラメータ設計と一致。
+  # 「セッション用」という機能性が inauthentic 判定への防御になる。
+  - TRPG BGM 酒場
+  - TRPG 環境音 セッション
+  - ダンジョン 環境音
+  - dnd tavern ambience
+  - fantasy tavern ambience
+
+  # --- 候補B: ポモドーロ/集中タイマー×世界観アンビエンス ---
+  # タイマーUIが完全プロシージャル＝毎本の実質差分を機械的に作れる。検索起点で老舗と競合しない。
+  - 勉強タイマー 50分
+  - ポモドーロ タイマー 作業用
+  - 作業用 タイマー 環境音
+  - pomodoro timer ambience
+  - study with me timer
+
+  # --- 候補C: 物語性サウンドスケープ×和/乗り物 ---
+  # 睡眠系の高RPMを取れる唯一の低飽和ルート。「和」は英語圏への輸出資産。
+  - 夜行列車 走行音
+  - 雨の和室 環境音
+  - 囲炉裏 焚き火 音
+  - japanese room rain ambience
+  - night train ambience
+
 settings:
   minSubscribers: 100
   maxCandidatesPerRun: 30
   relevanceLanguage: ja
   regionCode: JP
   quotaGuardUnits: 3000
+# ⚠️ minSubscribers は下限のみで上限(ceiling)がない。
+#    そのため discover は巨大チャンネルばかり返し、設計が探したい「谷」が取れない（Issue #31）。
