@@ -71,3 +71,37 @@ describe("createYoutubeClient.searchChannels", () => {
     expect(results).toEqual([{ channelId: "UCsleep", title: "眠れるCH" }]);
   });
 });
+
+describe("createYoutubeClient.fetchVideos", () => {
+  // videos.list は id フィルタと maxResults を併用できず、id は最大50件。
+  test("maxResultsを付けず、50件超のidは分割して全件取得する", async () => {
+    const calledUrls: string[] = [];
+    const fakeFetch: typeof fetch = async (input) => {
+      const url = new URL(String(input));
+      calledUrls.push(url.toString());
+      const ids = (url.searchParams.get("id") ?? "").split(",").filter((id) => id.length > 0);
+      const items = ids.map((id) => ({
+        id,
+        snippet: { channelId: "UCx", title: `t-${id}`, publishedAt: "2026-07-01T00:00:00Z", tags: [] },
+        statistics: { viewCount: "1" },
+        contentDetails: { duration: "PT1H" }
+      }));
+      return new Response(JSON.stringify({ items }), { status: 200 });
+    };
+    const client = createYoutubeClient(config, fakeFetch);
+    const videoIds = Array.from({ length: 60 }, (_, i) => `v${i}`);
+
+    const videos = await client.fetchVideos(videoIds);
+
+    // 60件 → 50+10 の2回に分割
+    expect(calledUrls).toHaveLength(2);
+    // videos.list に maxResults を付けない（id併用で400になるため）
+    for (const url of calledUrls) {
+      expect(url).not.toContain("maxResults");
+      expect((url.match(/[?&]id=([^&]*)/)?.[1] ?? "").split(",").length).toBeLessThanOrEqual(50);
+    }
+    // 全件マップされる
+    expect(videos).toHaveLength(60);
+    expect(videos[0]?.durationSeconds).toBe(3600);
+  });
+});

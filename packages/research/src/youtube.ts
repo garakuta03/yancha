@@ -110,22 +110,29 @@ export function createYoutubeClient(config: ResearchConfig, fetchImpl: typeof fe
         return [];
       }
       const capturedAt = new Date().toISOString();
-      const json = await getJson("videos", {
-        part: "snippet,statistics,contentDetails",
-        id: videoIds.join(","),
-        maxResults: "50"
-      }) as YoutubeVideosResponse;
+      const videos: VideoSnapshot[] = [];
+      // videos.list は id フィルタと maxResults を併用不可、かつ id は最大50件。50件ずつ分割して取得する
+      for (let i = 0; i < videoIds.length; i += 50) {
+        const idsChunk = videoIds.slice(i, i + 50);
+        const json = await getJson("videos", {
+          part: "snippet,statistics,contentDetails",
+          id: idsChunk.join(",")
+        }) as YoutubeVideosResponse;
 
-      return (json.items ?? []).map((item): VideoSnapshot => ({
-        videoId: item.id,
-        channelId: item.snippet?.channelId ?? "",
-        title: item.snippet?.title ?? "",
-        publishedAt: item.snippet?.publishedAt ?? "",
-        durationSeconds: parseIsoDurationToSeconds(item.contentDetails?.duration ?? "PT0S"),
-        viewCount: Number(item.statistics?.viewCount ?? 0),
-        tags: item.snippet?.tags ?? [],
-        capturedAt
-      }));
+        for (const item of json.items ?? []) {
+          videos.push({
+            videoId: item.id,
+            channelId: item.snippet?.channelId ?? "",
+            title: item.snippet?.title ?? "",
+            publishedAt: item.snippet?.publishedAt ?? "",
+            durationSeconds: parseIsoDurationToSeconds(item.contentDetails?.duration ?? "PT0S"),
+            viewCount: Number(item.statistics?.viewCount ?? 0),
+            tags: item.snippet?.tags ?? [],
+            capturedAt
+          });
+        }
+      }
+      return videos;
     }
   };
 }
