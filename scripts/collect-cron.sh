@@ -6,7 +6,10 @@
 #   2. cron の環境には mise / direnv が効かない → node へのパスが通らない
 #
 # 使い方（crontab -e）:
-#   0 9 * * * /home/ope/Projects/MY-PROJECT/yancha/scripts/collect-cron.sh
+#   17 0 * * * /home/ope/Projects/MY-PROJECT/yancha/scripts/collect-cron.sh
+#
+# ⚠️ このホストは UTC で動いている。crontab の時刻も UTC で解釈される。
+#    00:17 UTC = 09:17 JST（日本時間の朝）。JST のつもりで書くと9時間ズレる。
 #
 # 設計上の注意:
 #   - cron 化してよいのは collect だけ。discover はしない
