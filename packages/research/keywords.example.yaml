@@ -37,9 +37,9 @@ keywords:
 
 settings:
   minSubscribers: 100
+  # 谷（中小の伸びているチャンネル）を探すための登録者上限。ニッチに応じて可変。
+  maxSubscribers: 300000
   maxCandidatesPerRun: 30
   relevanceLanguage: ja
   regionCode: JP
   quotaGuardUnits: 3000
-# ⚠️ minSubscribers は下限のみで上限(ceiling)がない。
-#    そのため discover は巨大チャンネルばかり返し、設計が探したい「谷」が取れない（Issue #31）。

@@ -73,6 +73,13 @@ export async function discoverCandidates(deps: DiscoverDeps): Promise<Candidate[
       };
     })
     .filter((candidate) => candidate.subscriberCount >= deps.settings.minSubscribers)
-    .sort((a, b) => b.subscriberCount - a.subscriberCount)
+    .filter((candidate) => candidate.subscriberCount <= deps.settings.maxSubscribers)
+    .sort((a, b) => {
+      const keywordDiff = b.matchedKeywords.length - a.matchedKeywords.length;
+      if (keywordDiff !== 0) {
+        return keywordDiff;
+      }
+      return b.subscriberCount - a.subscriberCount;
+    })
     .slice(0, deps.settings.maxCandidatesPerRun);
 }

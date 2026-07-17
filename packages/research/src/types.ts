@@ -18,6 +18,7 @@ export interface Candidate {
 
 export interface KeywordsSettings {
   readonly minSubscribers: number;
+  readonly maxSubscribers: number;
   readonly maxCandidatesPerRun: number;
   readonly relevanceLanguage: string;
   readonly regionCode: string;
