@@ -71,6 +71,17 @@ export interface MetadataData {
   readonly thumbnailPrompt: string;
 }
 
+export interface CheckResult {
+  readonly name: "metadataPolicy" | "uniqueness" | "loudness";
+  readonly passed: boolean;
+  readonly details: readonly string[];
+}
+
+export interface ChecksData {
+  readonly passed: boolean;
+  readonly results: readonly CheckResult[];
+}
+
 export interface PlaceholderData {
   readonly status: "stub" | "manual-required";
   readonly message: string;
