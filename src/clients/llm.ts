@@ -1,5 +1,5 @@
 import type { AppConfig } from "../config.js";
-import { YanchaError } from "@yancha/core";
+import { Logger, YanchaError } from "@yancha/core";
 
 export interface LlmMessage {
   readonly role: "system" | "user";
@@ -9,6 +9,7 @@ export interface LlmMessage {
 export interface LlmGenerateRequest {
   readonly messages: readonly LlmMessage[];
   readonly temperature: number;
+  readonly responseFormat?: "text" | "json";
 }
 
 export interface LlmGenerateResponse {
@@ -19,6 +20,7 @@ export interface LlmGenerateResponse {
 
 export interface LlmClient {
   generate(request: LlmGenerateRequest): Promise<LlmGenerateResponse>;
+  generateJson<T>(request: LlmGenerateRequest, validate: (value: unknown) => T): Promise<T>;
 }
 
 export function createLlmClient(config: AppConfig): LlmClient {
@@ -31,26 +33,45 @@ export function createLlmClient(config: AppConfig): LlmClient {
   return new MockLlmClient(config.llm.model);
 }
 
-class OpenAiLlmClient implements LlmClient {
-  constructor(private readonly config: AppConfig) {}
+const maxRetries = 3;
+const baseRetryDelayMs = 1_000;
+
+abstract class BaseLlmClient implements LlmClient {
+  abstract generate(request: LlmGenerateRequest): Promise<LlmGenerateResponse>;
+
+  async generateJson<T>(request: LlmGenerateRequest, validate: (value: unknown) => T): Promise<T> {
+    const response = await this.generate({ ...request, responseFormat: "json" });
+    return validate(extractJson(response.text));
+  }
+}
+
+class OpenAiLlmClient extends BaseLlmClient {
+  private readonly logger: Logger;
+
+  constructor(private readonly config: AppConfig) {
+    super();
+    this.logger = new Logger(config.logLevel);
+  }
 
   async generate(request: LlmGenerateRequest): Promise<LlmGenerateResponse> {
-    const response = await fetch(`${this.config.llm.openaiBaseUrl}/chat/completions`, {
-      method: "POST",
-      headers: {
-        "content-type": "application/json",
-        authorization: `Bearer ${this.config.llm.openaiApiKey}`
+    const response = await fetchWithRetry(
+      `${this.config.llm.openaiBaseUrl}/chat/completions`,
+      {
+        method: "POST",
+        headers: {
+          "content-type": "application/json",
+          authorization: `Bearer ${this.config.llm.openaiApiKey}`
+        },
+        body: JSON.stringify({
+          model: this.config.llm.model,
+          messages: request.messages,
+          temperature: request.temperature,
+          ...(request.responseFormat === "json" ? { response_format: { type: "json_object" } } : {})
+        })
       },
-      body: JSON.stringify({
-        model: this.config.llm.model,
-        messages: request.messages,
-        temperature: request.temperature
-      })
-    });
-
-    if (!response.ok) {
-      throw new YanchaError("CLIENT_ERROR", `OpenAI APIの呼び出しに失敗しました: ${response.status} ${response.statusText}`);
-    }
+      "OpenAI API",
+      this.logger
+    );
 
     const payload = (await response.json()) as OpenAiChatResponse;
     const text = payload.choices[0]?.message.content;
@@ -62,28 +83,35 @@ class OpenAiLlmClient implements LlmClient {
   }
 }
 
-class GeminiLlmClient implements LlmClient {
-  constructor(private readonly config: AppConfig) {}
+class GeminiLlmClient extends BaseLlmClient {
+  private readonly logger: Logger;
+
+  constructor(private readonly config: AppConfig) {
+    super();
+    this.logger = new Logger(config.logLevel);
+  }
 
   async generate(request: LlmGenerateRequest): Promise<LlmGenerateResponse> {
     const url = `${this.config.llm.geminiBaseUrl}/models/${this.config.llm.model}:generateContent?key=${this.config.llm.geminiApiKey}`;
-    const response = await fetch(url, {
-      method: "POST",
-      headers: { "content-type": "application/json" },
-      body: JSON.stringify({
-        contents: request.messages.map((message) => ({
-          role: message.role === "system" ? "user" : message.role,
-          parts: [{ text: message.content }]
-        })),
-        generationConfig: {
-          temperature: request.temperature
-        }
-      })
-    });
-
-    if (!response.ok) {
-      throw new YanchaError("CLIENT_ERROR", `Gemini APIの呼び出しに失敗しました: ${response.status} ${response.statusText}`);
-    }
+    const response = await fetchWithRetry(
+      url,
+      {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({
+          contents: request.messages.map((message) => ({
+            role: message.role === "system" ? "user" : message.role,
+            parts: [{ text: message.content }]
+          })),
+          generationConfig: {
+            temperature: request.temperature,
+            ...(request.responseFormat === "json" ? { responseMimeType: "application/json" } : {})
+          }
+        })
+      },
+      "Gemini API",
+      this.logger
+    );
 
     const payload = (await response.json()) as GeminiResponse;
     const text = payload.candidates[0]?.content.parts.map((part) => part.text).join("\n").trim();
@@ -95,11 +123,17 @@ class GeminiLlmClient implements LlmClient {
   }
 }
 
-class MockLlmClient implements LlmClient {
-  constructor(private readonly model: string) {}
+class MockLlmClient extends BaseLlmClient {
+  constructor(private readonly model: string) {
+    super();
+  }
 
   async generate(request: LlmGenerateRequest): Promise<LlmGenerateResponse> {
     const userPrompt = findLastUserMessage(request.messages)?.content ?? "";
+    if (request.responseFormat === "json") {
+      return { text: JSON.stringify(createMockJsonResponse(userPrompt), null, 2), provider: "mock", model: this.model };
+    }
+
     const title = extractPromptValue(userPrompt, "タイトル") ?? "静かな夜の睡眠導入";
     const minutes = Number(extractPromptValue(userPrompt, "想定尺（分）") ?? "10");
     const text = [
@@ -131,6 +165,99 @@ class MockLlmClient implements LlmClient {
 
     return { text, provider: "mock", model: this.model };
   }
+}
+
+export function extractJson(text: string): unknown {
+  const fenced = text.match(/```(?:json)?\s*([\s\S]*?)```/i)?.[1];
+  const candidate = fenced ?? text;
+  const trimmed = candidate.trim();
+  const objectStart = trimmed.indexOf("{");
+  const objectEnd = trimmed.lastIndexOf("}");
+  const jsonText = objectStart >= 0 && objectEnd > objectStart ? trimmed.slice(objectStart, objectEnd + 1) : trimmed;
+
+  try {
+    return JSON.parse(jsonText) as unknown;
+  } catch (error) {
+    // デバッグ用に元応答の冒頭を切り詰めてメッセージに含める
+    const snippet = text.trim().slice(0, 200);
+    throw new YanchaError("CLIENT_ERROR", `LLM応答のJSON解析に失敗しました。応答冒頭: ${snippet}`, { cause: error });
+  }
+}
+
+async function fetchWithRetry(url: string, init: RequestInit, label: string, logger: Logger): Promise<Response> {
+  let lastResponse: Response | undefined;
+
+  for (let attempt = 1; attempt <= maxRetries + 1; attempt += 1) {
+    const response = await fetch(url, init);
+    if (response.ok) {
+      return response;
+    }
+    if (response.status >= 400 && response.status < 500 && response.status !== 429) {
+      throw new YanchaError("CLIENT_ERROR", `${label}の呼び出しに失敗しました: ${response.status} ${response.statusText}`);
+    }
+
+    lastResponse = response;
+    if (attempt <= maxRetries) {
+      const waitMs = resolveRetryDelayMs(response, attempt);
+      // 何回目の試行が失敗し、何ミリ秒待って再試行するかを記録する
+      logger.warn(`${label}の呼び出しに失敗しました。再試行します。`, {
+        attempt,
+        status: response.status,
+        waitMs
+      });
+      await sleep(waitMs);
+    }
+  }
+
+  throw new YanchaError(
+    "CLIENT_ERROR",
+    `${label}の呼び出しに失敗しました: ${lastResponse?.status ?? "unknown"} ${lastResponse?.statusText ?? ""}`.trim()
+  );
+}
+
+function resolveRetryDelayMs(response: Response, attempt: number): number {
+  // Retry-Afterは秒数形式のみ尊重する。HTTP-date形式は決定論のため扱わず指数バックオフにフォールバックする
+  const retryAfter = response.headers.get("retry-after");
+  if (retryAfter) {
+    const seconds = Number(retryAfter);
+    if (Number.isFinite(seconds) && seconds >= 0) {
+      return seconds * 1_000;
+    }
+  }
+  return baseRetryDelayMs * 2 ** (attempt - 1);
+}
+
+function sleep(ms: number): Promise<void> {
+  return new Promise((resolve) => {
+    setTimeout(resolve, ms);
+  });
+}
+
+function createMockJsonResponse(prompt: string): unknown {
+  const title = extractPromptValue(prompt, "タイトル") ?? "雨の夜のアンビエンス";
+  return {
+    sceneId: "mock-rain-night",
+    title,
+    storyline: "静かな夜の雨音と淡い粒子の動きで、落ち着いた時間を描きます。",
+    durationSeconds: 60,
+    seed: "mock-seed",
+    audio: {
+      preset: "rain",
+      layers: [
+        { id: "steady-rain", type: "rain", gain: 0.8 },
+        { id: "soft-drops", type: "drops", gain: 0.35 }
+      ]
+    },
+    visual: {
+      preset: "particles",
+      params: {
+        particleCount: 240,
+        drift: 0.35,
+        brightness: 0.55,
+        loopSeconds: 10
+      }
+    }
+  };
 }
 
 function findLastUserMessage(messages: readonly LlmMessage[]): LlmMessage | undefined {

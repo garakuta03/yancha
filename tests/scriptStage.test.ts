@@ -31,6 +31,9 @@ describe("ScriptStage", () => {
           model: "test-model",
           text: "# 森の夜に呼吸を整える\n\n（間）\nゆっくり息を吐き、体を休ませます。"
         };
+      },
+      async generateJson() {
+        throw new Error("このテストではJSON生成を使いません。");
       }
     };
 
@@ -65,6 +68,9 @@ describe("ScriptStage", () => {
           model: "test-model",
           text: "この音声で不眠が改善します。"
         };
+      },
+      async generateJson() {
+        throw new Error("このテストではJSON生成を使いません。");
       }
     };
 
