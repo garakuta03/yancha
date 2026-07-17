@@ -7,7 +7,8 @@ const settings: KeywordsSettings = {
   maxCandidatesPerRun: 2,
   relevanceLanguage: "ja",
   regionCode: "JP",
-  quotaGuardUnits: 3000
+  searchCallGuardPerDay: 100,
+  unitGuard: 10000
 };
 
 function channel(id: string, subs: number): ChannelSnapshot {
@@ -75,14 +76,33 @@ describe("discoverCandidates", () => {
     expect(result[0]?.matchedKeywords).toEqual(["睡眠導入", "ヒーリング"]);
   });
 
-  test("クォータ見積り超過かつ未承認なら例外", async () => {
-    const many = Array.from({ length: 40 }, (_, i) => `kw${i}`);
+  test("search.list呼び出し回数が専用枠を超過かつ未承認なら例外", async () => {
+    const many = Array.from({ length: 101 }, (_, i) => `kw${i}`);
     await expect(discoverCandidates({
       keywords: many,
       settings,
       client,
       existingChannelIds: new Set(),
       confirmed: false
-    })).rejects.toThrow(/クォータ|ユニット/);
+    })).rejects.toThrow(/search\.list呼び出し回数/);
+  });
+
+  test("channels.listユニット見積り超過かつ未承認なら例外", async () => {
+    const fetchChannels = vi.fn(async (ids: readonly string[]) => ids.map((id) => channel(id, 1000)));
+    const statGuardClient = {
+      async searchChannels() {
+        return Array.from({ length: 51 }, (_, i) => ({ channelId: `UC${i}`, title: `t-${i}` }));
+      },
+      fetchChannels
+    };
+
+    await expect(discoverCandidates({
+      keywords: ["睡眠導入"],
+      settings: { ...settings, unitGuard: 1 },
+      client: statGuardClient,
+      existingChannelIds: new Set(),
+      confirmed: false
+    })).rejects.toThrow(/channels\.listのユニット見積り/);
+    expect(fetchChannels).not.toHaveBeenCalled();
   });
 });

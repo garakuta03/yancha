@@ -9,11 +9,16 @@ export const DEFAULT_KEYWORDS_SETTINGS: KeywordsSettings = {
   maxCandidatesPerRun: 30,
   relevanceLanguage: "ja",
   regionCode: "JP",
-  quotaGuardUnits: 3000
+  searchCallGuardPerDay: 100,
+  unitGuard: 10000
 };
 
-export function estimateSearchUnits(keywordCount: number): number {
-  return keywordCount * 100;
+export function estimateSearchCalls(keywordCount: number): number {
+  return keywordCount;
+}
+
+export function estimateStatUnits(candidateCount: number): number {
+  return Math.ceil(candidateCount / 50);
 }
 
 function validateKeywordsSettings(settings: KeywordsSettings): KeywordsSettings {
@@ -22,6 +27,15 @@ function validateKeywordsSettings(settings: KeywordsSettings): KeywordsSettings 
       "CONFIG_INVALID",
       `maxSubscribers は minSubscribers 以上にしてください: minSubscribers=${settings.minSubscribers}, maxSubscribers=${settings.maxSubscribers}`
     );
+  }
+  if (!Number.isFinite(settings.searchCallGuardPerDay) || settings.searchCallGuardPerDay <= 0) {
+    throw new YanchaError(
+      "CONFIG_INVALID",
+      `searchCallGuardPerDay は正の数にしてください: searchCallGuardPerDay=${settings.searchCallGuardPerDay}`
+    );
+  }
+  if (!Number.isFinite(settings.unitGuard) || settings.unitGuard <= 0) {
+    throw new YanchaError("CONFIG_INVALID", `unitGuard は正の数にしてください: unitGuard=${settings.unitGuard}`);
   }
   return settings;
 }

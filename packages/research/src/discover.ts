@@ -1,5 +1,5 @@
 import { YanchaError } from "@yancha/core";
-import { estimateSearchUnits } from "./keywords.js";
+import { estimateSearchCalls, estimateStatUnits } from "./keywords.js";
 import type { YoutubeClient } from "./youtube.js";
 import type { Candidate, KeywordsSettings } from "./types.js";
 
@@ -20,11 +20,11 @@ function chunk<T>(items: readonly T[], size: number): T[][] {
 }
 
 export async function discoverCandidates(deps: DiscoverDeps): Promise<Candidate[]> {
-  const estimated = estimateSearchUnits(deps.keywords.length);
-  if (estimated > deps.settings.quotaGuardUnits && !deps.confirmed) {
+  const estimatedSearchCalls = estimateSearchCalls(deps.keywords.length);
+  if (estimatedSearchCalls > deps.settings.searchCallGuardPerDay && !deps.confirmed) {
     throw new YanchaError(
       "POLICY_VIOLATION",
-      `クォータ見積り ${estimated} ユニットが上限 ${deps.settings.quotaGuardUnits} を超えます。--yes で続行してください。`
+      `search.list呼び出し回数 ${estimatedSearchCalls} が1日の専用枠 ${deps.settings.searchCallGuardPerDay}回/日 を超えます。--yes で続行してください。`
     );
   }
 
@@ -51,6 +51,14 @@ export async function discoverCandidates(deps: DiscoverDeps): Promise<Candidate[
   const uniqueIds = [...matched.keys()];
   if (uniqueIds.length === 0) {
     return [];
+  }
+
+  const estimatedStatUnits = estimateStatUnits(uniqueIds.length);
+  if (estimatedStatUnits > deps.settings.unitGuard && !deps.confirmed) {
+    throw new YanchaError(
+      "POLICY_VIOLATION",
+      `channels.listのユニット見積り ${estimatedStatUnits} が上限 ${deps.settings.unitGuard} を超えます。--yes で続行してください。`
+    );
   }
 
   const stats = new Map<string, { subscriberCount: number; title: string }>();

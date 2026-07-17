@@ -41,5 +41,7 @@ pnpm --filter @yancha/research research retire <channelId>
 ```
 
 - 候補は自動で台帳に入らない。`approve` で人間が承認したものだけ昇格する。
-- `discover` は見積りが `quotaGuardUnits` を超えると中断する。意図して続行する場合は `--yes` を付ける。
+- `discover` はバケット別のガードで中断する（意図して続行する場合は `--yes`）:
+  search.list 呼び出し回数がキーワード数で `searchCallGuardPerDay`（既定100回/日の専用枠）を超える場合、
+  または channels.list のユニット見積り `ceil(候補数/50)` が `unitGuard`（既定10000）を超える場合。
 - `retire` した台帳エントリは行を残したまま、以後の `collect` 対象から除外される。

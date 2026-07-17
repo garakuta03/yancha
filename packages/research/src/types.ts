@@ -22,7 +22,8 @@ export interface KeywordsSettings {
   readonly maxCandidatesPerRun: number;
   readonly relevanceLanguage: string;
   readonly regionCode: string;
-  readonly quotaGuardUnits: number;
+  readonly searchCallGuardPerDay: number;
+  readonly unitGuard: number;
 }
 
 export interface KeywordsFile {
