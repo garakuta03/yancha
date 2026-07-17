@@ -147,26 +147,26 @@
 設計: [P0 E2E MVP 設計](docs/superpowers/specs/2026-07-16-p0-e2e-mvp-design.md) /
 実装計画: [P0 E2E MVP 実装計画](docs/superpowers/plans/2026-07-16-p0-e2e-mvp.md)（Codexが実装）
 
-- [ ] **前提: LLMクライアント堅牢化**（JSONモード・429リトライ・thinking応答）= #19。
+- [x] **前提: LLMクライアント堅牢化**（JSONモード・429リトライ・thinking応答）= #19。
       scene/metadata が構造化JSON出力に依存するためブロッカー
-- [ ] パイプライン骨格の組み替え（朗読ステージ削除・seed駆動・**license.json を追記モデルへ修正**）
-- [ ] シーン設計ステージ（LLM → scene.json ＋ uniqueness.json 生成）
-- [ ] **packages/audio-synth MVP**（**依存ゼロTS実装**: 雨1プリセット、チャンクレンダリング→ffmpeg concat、seed駆動）
+- [x] パイプライン骨格の組み替え（朗読ステージ削除・seed駆動・**license.json を追記モデルへ修正**）
+- [x] シーン設計ステージ（LLM → scene.json ＋ uniqueness.json 生成）
+- [x] **packages/audio-synth MVP**（**依存ゼロTS実装**: 雨1プリセット、チャンクレンダリング→ffmpeg concat、seed駆動）
       - 実機検証の結果 **Elementary は採用しない**（雨音は105行で足り、wasm＋独自DSLに見合わない）。
         依存ゼロなら「コードを人間が書く＝著作権主張可」も最も強く担保される
-- [ ] **packages/visual-synth MVP**（**Puppeteer + headless Chrome + SwiftShader**、1シーン完全ループ）
+- [x] **packages/visual-synth MVP**（**Puppeteer + headless Chrome + SwiftShader**、1シーン完全ループ）
       - ⚠️ **SwiftShaderフラグ必須**。落とすと**例外なしで真っ白な動画ができる** → 白画面assert必須
       - ⚠️ **出力は尺全体ではなく短いループ素材**（1080p30 は約2.7fps ＝ 1時間動画を毎フレーム描くと11時間）
-- [ ] ffmpeg合成（**ループ素材を `-stream_loop` で尺まで伸ばす** × 音声、ラウドネス正規化 -20〜-16 LUFS）
-- [ ] メタデータ生成（タイトル・説明・Storyline・タグ・サムネ1案でOK）
-- [ ] 自動チェック組み込み: 効能表現リンター / uniqueness重複チェック / ラウドネス検査
-- [ ] **限定公開アップロードまで自動化**（Data API。OAuth2・`containsSyntheticMedia` でAI開示ON）
+- [x] ffmpeg合成（**ループ素材を `-stream_loop` で尺まで伸ばす** × 音声、ラウドネス正規化 -20〜-16 LUFS）
+- [x] メタデータ生成（タイトル・説明・Storyline・タグ・サムネ1案でOK）
+- [x] 自動チェック組み込み: 効能表現リンター / uniqueness重複チェック / ラウドネス検査
+- [x] **限定公開アップロードまで自動化**（Data API。OAuth2・`containsSyntheticMedia` でAI開示ON）
       - ⚠️ **Content IDクレームはAPIで取得不可能と確定** → 人間レビューでStudio目視するしかない
       - ⚠️ OAuth同意画面を**本番公開**にしないと refresh token が**7日で失効**する
-- [ ] 軽量レビューUI（なくても可: チェック結果＋動画リンクをまとめて出すだけ）
-- [ ] E2Eを3〜5回回して壊れる箇所を潰す（この段階の動画は公開しない）
+- [x] 軽量レビューUI（なくても可: チェック結果＋動画リンクをまとめて出すだけ）
+- [x] E2Eを3〜5回回して壊れる箇所を潰す（この段階の動画は公開しない）
 
-出口: E2Eが安定して回る。1本の生成時間・ボトルネックが把握できている。
+出口: E2Eが安定して回る。1本の生成時間・ボトルネックが把握できている。 **✅達成（2026-07-17。E2E3回×9ステージ・約95秒/本・#19〜#28クローズ）**
 
 > P0の尺は**60秒**で回す（E2Eを3〜5回回すのが出口条件のため）。
 > ループ構造によりレンダリングコストは尺から独立するので、フェーズ1で長尺にするコストはほぼゼロ。
