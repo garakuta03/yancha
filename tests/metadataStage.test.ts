@@ -70,7 +70,8 @@ describe("MetadataStage", () => {
         geminiBaseUrl: ""
       },
       comfyuiBaseUrl: "",
-      ffmpegPath: "ffmpeg"
+      ffmpegPath: "ffmpeg",
+      youtube: {}
     });
 
     const artifact = await new MetadataStage(mockClient).run({ videoId, videoDir });

@@ -10,10 +10,20 @@ const stageIds: readonly StageId[] = ["theme", "scene", "audio", "visual", "vide
 async function main(): Promise<void> {
   const args = process.argv.slice(2);
   const command = args[0];
-  const config = loadConfig();
+  const uploadDryRun = args.includes("--dry-run");
+  const isAuthCommand = command === "auth" || (command === "pipeline" && args[1] === "auth");
+  const config = loadConfig(process.env, { validateLlm: !isAuthCommand });
+
+  if (isAuthCommand) {
+    const authPort = parsePort(readOption(args, "--port"));
+    const { runYoutubeAuth } = await import("./auth.js");
+    await runYoutubeAuth(config, authPort === undefined ? {} : { port: authPort });
+    return;
+  }
+
   const logger = new Logger(config.logLevel);
   const llmClient = createLlmClient(config);
-  const orchestrator = new Orchestrator(config, logger, createStageRunners(llmClient));
+  const orchestrator = new Orchestrator(config, logger, createStageRunners(llmClient, config, { uploadDryRun }));
 
   if (command === "pipeline") {
     const videoId = readOption(args, "--video-id") ?? createDefaultVideoId();
@@ -53,6 +63,17 @@ function parseStageId(value: string | undefined): StageId | undefined {
     return value as StageId;
   }
   throw new YanchaError("CONFIG_INVALID", `未知のステージです: ${value}`);
+}
+
+function parsePort(value: string | undefined): number | undefined {
+  if (value === undefined) {
+    return undefined;
+  }
+  const port = Number(value);
+  if (Number.isInteger(port) && port > 0 && port <= 65_535) {
+    return port;
+  }
+  throw new YanchaError("CONFIG_INVALID", `認証サーバのポート番号が不正です: ${value}`);
 }
 
 function createDefaultVideoId(): string {

@@ -178,7 +178,8 @@ function testConfig(provider: "mock" | "openai" | "gemini"): AppConfig {
       geminiBaseUrl: "https://example.test/gemini"
     },
     comfyuiBaseUrl: "http://127.0.0.1:8188",
-    ffmpegPath: "ffmpeg"
+    ffmpegPath: "ffmpeg",
+    youtube: {}
   };
 }
 

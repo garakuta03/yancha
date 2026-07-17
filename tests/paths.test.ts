@@ -14,7 +14,8 @@ describe("resolveVideoPaths", () => {
         geminiBaseUrl: "https://generativelanguage.googleapis.com/v1beta"
       },
       comfyuiBaseUrl: "http://127.0.0.1:8188",
-      ffmpegPath: "ffmpeg"
+      ffmpegPath: "ffmpeg",
+      youtube: {}
     } satisfies AppConfig;
 
     const paths = resolveVideoPaths(config, "video-test");

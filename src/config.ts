@@ -16,26 +16,36 @@ export interface AppConfig {
   };
   readonly comfyuiBaseUrl: string;
   readonly ffmpegPath: string;
+  readonly youtube: {
+    readonly clientId?: string;
+    readonly clientSecret?: string;
+    readonly refreshToken?: string;
+  };
 }
 
 const logLevels = new Set<LogLevel>(["debug", "info", "warn", "error"]);
 const llmProviders = new Set<LlmProvider>(["mock", "openai", "gemini"]);
 
-export function loadConfig(env: NodeJS.ProcessEnv = process.env): AppConfig {
+export interface LoadConfigOptions {
+  readonly validateLlm?: boolean;
+}
+
+export function loadConfig(env: NodeJS.ProcessEnv = process.env, options: LoadConfigOptions = {}): AppConfig {
   const logLevel = parseLogLevel(env.YANCHA_LOG_LEVEL ?? "info");
   const assetsDir = valueOrDefault(env.YANCHA_ASSETS_DIR, "assets");
   const provider = parseLlmProvider(valueOrDefault(env.YANCHA_LLM_PROVIDER, "gemini"));
   const model = valueOrDefault(env.YANCHA_LLM_MODEL, defaultModelFor(provider));
+  const validateLlm = options.validateLlm ?? true;
 
-  if (model.length === 0) {
+  if (validateLlm && model.length === 0) {
     throw new YanchaError("CONFIG_MISSING", "環境変数 YANCHA_LLM_MODEL が未設定です。使用するLLMモデル名を指定してください。");
   }
 
-  if (provider === "openai" && !env.OPENAI_API_KEY) {
+  if (validateLlm && provider === "openai" && !env.OPENAI_API_KEY) {
     throw new YanchaError("CONFIG_MISSING", "環境変数 OPENAI_API_KEY が未設定です。OpenAIを使う場合はAPIキーを設定してください。");
   }
 
-  if (provider === "gemini" && !env.GEMINI_API_KEY) {
+  if (validateLlm && provider === "gemini" && !env.GEMINI_API_KEY) {
     throw new YanchaError("CONFIG_MISSING", "環境変数 GEMINI_API_KEY が未設定です。Geminiを使う場合はAPIキーを設定してください。");
   }
 
@@ -51,7 +61,12 @@ export function loadConfig(env: NodeJS.ProcessEnv = process.env): AppConfig {
       ...(env.GEMINI_API_KEY ? { geminiApiKey: env.GEMINI_API_KEY } : {})
     },
     comfyuiBaseUrl: valueOrDefault(env.COMFYUI_BASE_URL, "http://127.0.0.1:8188"),
-    ffmpegPath: valueOrDefault(env.FFMPEG_PATH, "ffmpeg")
+    ffmpegPath: valueOrDefault(env.FFMPEG_PATH, "ffmpeg"),
+    youtube: {
+      ...(env.YOUTUBE_CLIENT_ID ? { clientId: env.YOUTUBE_CLIENT_ID } : {}),
+      ...(env.YOUTUBE_CLIENT_SECRET ? { clientSecret: env.YOUTUBE_CLIENT_SECRET } : {}),
+      ...(env.YOUTUBE_REFRESH_TOKEN ? { refreshToken: env.YOUTUBE_REFRESH_TOKEN } : {})
+    }
   };
 }
 
