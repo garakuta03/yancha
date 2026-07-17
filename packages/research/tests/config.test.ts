@@ -9,6 +9,12 @@ describe("loadResearchConfig", () => {
     const config = loadResearchConfig({ YOUTUBE_API_KEY: "k" });
     expect(config.youtubeBaseUrl).toBe("https://www.googleapis.com/youtube/v3");
     expect(config.dataDir).toBe("research-data");
+    expect(config.assetsDir).toMatch(/assets$/);
     expect(config.logLevel).toBe("info");
+  });
+
+  test("assetsDirを環境変数から解決する", () => {
+    const config = loadResearchConfig({ YOUTUBE_API_KEY: "k", YANCHA_ASSETS_DIR: "tmp-assets" });
+    expect(config.assetsDir).toMatch(/tmp-assets$/);
   });
 });

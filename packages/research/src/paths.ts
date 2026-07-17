@@ -8,6 +8,7 @@ export interface ResearchPaths {
   readonly candidatesYaml: string;
   readonly snapshotsDir: string;
   readonly dbFile: string;
+  readonly assetsDir: string;
 }
 
 export function resolveResearchPaths(config: ResearchConfig): ResearchPaths {
@@ -18,7 +19,8 @@ export function resolveResearchPaths(config: ResearchConfig): ResearchPaths {
     keywordsYaml: resolve(dataDir, "keywords.yaml"),
     candidatesYaml: resolve(dataDir, "candidates.yaml"),
     snapshotsDir: resolve(dataDir, "snapshots"),
-    dbFile: resolve(dataDir, "data.db")
+    dbFile: resolve(dataDir, "data.db"),
+    assetsDir: config.assetsDir
   };
 }
 

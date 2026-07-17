@@ -30,4 +30,25 @@ describe("SQLite ResearchStore", () => {
     expect(store.latestVideoSnapshots()[0]?.durationSeconds).toBe(3600);
     store.close();
   });
+
+  test("動画レビューを登録・更新・一覧取得できる", () => {
+    const store = createSqliteStore(":memory:");
+    store.setVideoReviewed("vid-1", "2026-07-17T01:00:00.000Z", "確認済み");
+    expect(store.getVideoReview("vid-1")).toEqual({
+      videoId: "vid-1",
+      reviewedAt: "2026-07-17T01:00:00.000Z",
+      note: "確認済み"
+    });
+
+    store.setVideoReviewed("vid-1", "2026-07-17T02:00:00.000Z");
+    store.setVideoReviewed("vid-2", "2026-07-17T01:30:00.000Z", "保留なし");
+
+    expect(store.getVideoReview("vid-1")).toEqual({
+      videoId: "vid-1",
+      reviewedAt: "2026-07-17T02:00:00.000Z",
+      note: null
+    });
+    expect(store.listVideoReviews().map((review) => review.videoId)).toEqual(["vid-1", "vid-2"]);
+    store.close();
+  });
 });

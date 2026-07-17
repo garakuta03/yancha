@@ -6,6 +6,7 @@ const config = {
   youtubeApiKey: "dummy",
   youtubeBaseUrl: "https://www.googleapis.com/youtube/v3",
   dataDir: "research-data",
+  assetsDir: resolve("assets"),
   logLevel: "info"
 } satisfies ResearchConfig;
 
@@ -15,6 +16,7 @@ describe("resolveResearchPaths", () => {
     expect(paths.ledgerYaml).toBe(resolve("research-data", "ledger.yaml"));
     expect(paths.snapshotsDir).toBe(resolve("research-data", "snapshots"));
     expect(paths.dbFile).toBe(resolve("research-data", "data.db"));
+    expect(paths.assetsDir).toBe(resolve("assets"));
   });
 
   test("候補とキーワードのパスを解決する", () => {

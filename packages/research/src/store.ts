@@ -8,7 +8,16 @@ export interface ResearchStore {
   latestTwoChannelSnapshots(channelId: string): ChannelSnapshot[];
   allLatestChannelSnapshots(): ChannelSnapshot[];
   latestVideoSnapshots(): VideoSnapshot[];
+  setVideoReviewed(videoId: string, reviewedAt: string, note?: string): void;
+  getVideoReview(videoId: string): VideoReview | null;
+  listVideoReviews(): VideoReview[];
   close(): void;
+}
+
+export interface VideoReview {
+  readonly videoId: string;
+  readonly reviewedAt: string;
+  readonly note: string | null;
 }
 
 export function createSqliteStore(dbFile: string): ResearchStore {
@@ -36,6 +45,11 @@ export function createSqliteStore(dbFile: string): ResearchStore {
       tags TEXT NOT NULL,
       captured_at TEXT NOT NULL
     );
+    CREATE TABLE IF NOT EXISTS video_reviews (
+      video_id TEXT PRIMARY KEY,
+      reviewed_at TEXT NOT NULL,
+      note TEXT
+    );
   `);
 
   const insertChannel = db.prepare(`
@@ -46,6 +60,13 @@ export function createSqliteStore(dbFile: string): ResearchStore {
     INSERT INTO video_snapshots (video_id, channel_id, title, published_at, duration_seconds, view_count, tags, captured_at)
     VALUES (?, ?, ?, ?, ?, ?, ?, ?)
   `);
+  const upsertVideoReview = db.prepare(`
+    INSERT INTO video_reviews (video_id, reviewed_at, note)
+    VALUES (?, ?, ?)
+    ON CONFLICT(video_id) DO UPDATE SET reviewed_at = excluded.reviewed_at, note = excluded.note
+  `);
+  const selectVideoReview = db.prepare("SELECT * FROM video_reviews WHERE video_id = ?");
+  const selectVideoReviews = db.prepare("SELECT * FROM video_reviews ORDER BY reviewed_at DESC, video_id ASC");
 
   return {
     saveBatch(batch) {
@@ -93,6 +114,20 @@ export function createSqliteStore(dbFile: string): ResearchStore {
       return rows.map(mapVideoRow);
     },
 
+    setVideoReviewed(videoId, reviewedAt, note) {
+      upsertVideoReview.run(videoId, reviewedAt, note ?? null);
+    },
+
+    getVideoReview(videoId) {
+      const row = selectVideoReview.get(videoId);
+      return row ? mapVideoReviewRow(row) : null;
+    },
+
+    listVideoReviews() {
+      const rows = selectVideoReviews.all();
+      return rows.map(mapVideoReviewRow);
+    },
+
     close() {
       db.close();
     }
@@ -125,6 +160,15 @@ function mapVideoRow(row: unknown): VideoSnapshot {
   };
 }
 
+function mapVideoReviewRow(row: unknown): VideoReview {
+  const typed = row as VideoReviewRow;
+  return {
+    videoId: typed.video_id,
+    reviewedAt: typed.reviewed_at,
+    note: typed.note
+  };
+}
+
 interface ChannelRow {
   readonly channel_id: string;
   readonly title: string;
@@ -143,4 +187,10 @@ interface VideoRow {
   readonly view_count: number;
   readonly tags: string;
   readonly captured_at: string;
+}
+
+interface VideoReviewRow {
+  readonly video_id: string;
+  readonly reviewed_at: string;
+  readonly note: string | null;
 }

@@ -15,6 +15,9 @@
       --muted: #a6adbb;
       --blue: #5b8def;
       --violet: #8a7de0;
+      --green: #67c27c;
+      --red: #e06c75;
+      --yellow: #d8b45d;
     }
     body {
       margin: 24px;
@@ -25,6 +28,11 @@
     h1 {
       margin: 0 0 18px;
       font-size: 20px;
+      font-weight: 700;
+    }
+    h2 {
+      margin: 28px 0 14px;
+      font-size: 18px;
       font-weight: 700;
     }
     table {
@@ -46,6 +54,83 @@
       color: var(--muted);
       font-weight: 600;
     }
+    button {
+      border: 1px solid var(--line);
+      border-radius: 6px;
+      padding: 7px 12px;
+      background: #242a35;
+      color: var(--text);
+      cursor: pointer;
+    }
+    button:hover {
+      border-color: var(--blue);
+    }
+    .clickable {
+      cursor: pointer;
+    }
+    .clickable:hover {
+      background: #202633;
+    }
+    .status-ok {
+      color: var(--green);
+      font-weight: 700;
+    }
+    .status-ng {
+      color: var(--red);
+      font-weight: 700;
+    }
+    .status-wait {
+      color: var(--yellow);
+    }
+    .detail {
+      margin-bottom: 28px;
+      padding: 14px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: var(--panel);
+    }
+    .detail h3 {
+      margin: 0 0 12px;
+      font-size: 16px;
+    }
+    .detail-grid {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+      gap: 14px;
+    }
+    .detail-block {
+      min-width: 0;
+    }
+    .detail-block h4 {
+      margin: 12px 0 6px;
+      color: var(--muted);
+      font-size: 13px;
+    }
+    pre {
+      overflow: auto;
+      max-height: 260px;
+      margin: 0;
+      padding: 10px;
+      border: 1px solid var(--line);
+      border-radius: 6px;
+      background: #10131a;
+      white-space: pre-wrap;
+      word-break: break-word;
+    }
+    .stage-list {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      justify-content: flex-end;
+    }
+    .stage {
+      color: var(--muted);
+      font-size: 12px;
+    }
+    .stage.done {
+      color: var(--green);
+      font-weight: 700;
+    }
     .grid {
       display: grid;
       grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
@@ -63,6 +148,9 @@
         margin: 14px;
       }
       .grid {
+        grid-template-columns: 1fr;
+      }
+      .detail-grid {
         grid-template-columns: 1fr;
       }
       th, td {
@@ -84,6 +172,16 @@
     <canvas id="durations"></canvas>
     <canvas id="words"></canvas>
   </div>
+  <section>
+    <h2>動画パイプライン</h2>
+    <table id="videos">
+      <thead>
+        <tr><th>video_id</th><th>ステージ進捗</th><th>checks</th><th>upload</th><th>レビュー済み</th></tr>
+      </thead>
+      <tbody></tbody>
+    </table>
+    <div id="video-detail" class="detail" hidden></div>
+  </section>
   <script>
     async function main() {
       const report = await (await fetch("/api/report")).json();
@@ -111,6 +209,145 @@
         },
         options: { indexAxis: "y" }
       });
+
+      await loadVideos();
+    }
+
+    async function loadVideos() {
+      const tbody = document.querySelector("#videos tbody");
+      tbody.textContent = "";
+      const videos = await (await fetch("/api/videos")).json();
+      if (videos.length === 0) {
+        const row = document.createElement("tr");
+        const cell = document.createElement("td");
+        cell.colSpan = 5;
+        cell.textContent = "動画はまだありません。";
+        row.appendChild(cell);
+        tbody.appendChild(row);
+        return;
+      }
+
+      for (const video of videos) {
+        const row = document.createElement("tr");
+        row.className = "clickable";
+        row.addEventListener("click", () => showVideoDetail(video.videoId));
+        appendTextCell(row, video.videoId);
+        appendStageCell(row, video.stages);
+        appendStatusCell(row, formatChecks(video.checksPassed), statusClass(video.checksPassed));
+        appendTextCell(row, video.uploadMode ?? "-");
+        appendTextCell(row, video.reviewedAt ?? "-");
+        tbody.appendChild(row);
+      }
+    }
+
+    async function showVideoDetail(videoId) {
+      const detail = document.getElementById("video-detail");
+      detail.hidden = false;
+      detail.textContent = "読み込み中です。";
+      const response = await fetch(`/api/videos/${encodeURIComponent(videoId)}`);
+      if (!response.ok) {
+        detail.textContent = "動画詳細を取得できませんでした。";
+        return;
+      }
+      const video = await response.json();
+      renderVideoDetail(detail, video);
+    }
+
+    function renderVideoDetail(container, video) {
+      container.textContent = "";
+      const title = document.createElement("h3");
+      title.textContent = `${video.videoId} / ${video.title ?? "タイトル未生成"}`;
+      container.appendChild(title);
+
+      const button = document.createElement("button");
+      button.textContent = video.reviewedAt ? "レビュー済みを更新" : "レビュー済みにする";
+      button.addEventListener("click", async () => {
+        await fetch(`/api/videos/${encodeURIComponent(video.videoId)}/review`, {
+          method: "POST",
+          headers: { "content-type": "application/json" },
+          body: JSON.stringify({})
+        });
+        await loadVideos();
+        await showVideoDetail(video.videoId);
+      });
+      container.appendChild(button);
+
+      const grid = document.createElement("div");
+      grid.className = "detail-grid";
+      container.appendChild(grid);
+
+      appendDetailBlock(grid, "storyline", video.storyline ?? "-");
+      appendDetailBlock(grid, "upload URL", video.uploadUrl ?? "-");
+      appendDetailBlock(grid, "checks結果", formatChecksDetail(video.checks));
+      appendDetailBlock(grid, "review.md", video.reviewMarkdown ?? "-");
+      appendDetailBlock(grid, "license証跡", formatLicense(video.license));
+      appendDetailBlock(grid, "レビュー記録", video.reviewedAt ?? "-");
+    }
+
+    function appendTextCell(row, value) {
+      const cell = document.createElement("td");
+      cell.textContent = value;
+      row.appendChild(cell);
+    }
+
+    function appendStatusCell(row, value, className) {
+      const cell = document.createElement("td");
+      cell.textContent = value;
+      if (className) {
+        cell.className = className;
+      }
+      row.appendChild(cell);
+    }
+
+    function appendStageCell(row, stages) {
+      const cell = document.createElement("td");
+      const list = document.createElement("div");
+      list.className = "stage-list";
+      for (const stage of ["theme", "scene", "audio", "visual", "video", "metadata", "checks", "upload", "review"]) {
+        const item = document.createElement("span");
+        item.className = stages[stage] ? "stage done" : "stage";
+        item.textContent = stage;
+        list.appendChild(item);
+      }
+      cell.appendChild(list);
+      row.appendChild(cell);
+    }
+
+    function appendDetailBlock(parent, heading, value) {
+      const block = document.createElement("div");
+      block.className = "detail-block";
+      const h4 = document.createElement("h4");
+      h4.textContent = heading;
+      const pre = document.createElement("pre");
+      pre.textContent = value;
+      block.appendChild(h4);
+      block.appendChild(pre);
+      parent.appendChild(block);
+    }
+
+    function formatChecks(value) {
+      if (value === true) return "合格";
+      if (value === false) return "不合格";
+      return "未生成";
+    }
+
+    function statusClass(value) {
+      if (value === true) return "status-ok";
+      if (value === false) return "status-ng";
+      return "status-wait";
+    }
+
+    function formatChecksDetail(checks) {
+      if (!checks || checks.length === 0) return "-";
+      return checks.map((check) => {
+        const status = check.passed ? "合格" : "不合格";
+        return `${check.name}: ${status}\n${(check.details || []).map((detail) => `- ${detail}`).join("\n")}`;
+      }).join("\n\n");
+    }
+
+    function formatLicense(entries) {
+      if (!entries || entries.length === 0) return "-";
+      return entries.map((entry) => `${entry.assetType} / ${entry.tool} / ${entry.createdAt}`).join("\n");
     }
 
     function escapeHtml(value) {

@@ -128,7 +128,7 @@ async function main(): Promise<void> {
   if (command === "serve") {
     const port = Number(args[1] ?? process.env.RESEARCH_PORT ?? 5177);
     const store = createSqliteStore(paths.dbFile);
-    startServer(store, port);
+    startServer(store, port, paths.assetsDir);
     return;
   }
 

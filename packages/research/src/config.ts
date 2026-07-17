@@ -1,3 +1,4 @@
+import { resolve } from "node:path";
 import { YanchaError } from "@yancha/core";
 import type { LogLevel } from "@yancha/core";
 
@@ -5,6 +6,7 @@ export interface ResearchConfig {
   readonly youtubeApiKey: string;
   readonly youtubeBaseUrl: string;
   readonly dataDir: string;
+  readonly assetsDir: string;
   readonly logLevel: LogLevel;
 }
 
@@ -25,6 +27,7 @@ export function loadResearchConfig(env: NodeJS.ProcessEnv = process.env): Resear
     youtubeApiKey,
     youtubeBaseUrl: env.YOUTUBE_BASE_URL?.trim() || "https://www.googleapis.com/youtube/v3",
     dataDir: env.YANCHA_RESEARCH_DIR?.trim() || "research-data",
+    assetsDir: resolve(env.YANCHA_ASSETS_DIR?.trim() || "assets"),
     logLevel
   };
 }
