@@ -45,8 +45,28 @@ describe("ffmpegArgs", () => {
     expect(args).toContain("ambient.wav");
     expect(args).toContain("final.mp4");
     expect(args[args.indexOf("-af") + 1]).toBe(
-      "loudnorm=I=-16:TP=-1.5:LRA=11:measured_I=-24.10:measured_TP=-3.20:measured_LRA=1.40:measured_thresh=-34.50:offset=0.25:linear=true:print_format=summary"
+      "loudnorm=I=-16:TP=-1.5:LRA=11:measured_I=-24.10:measured_TP=-3.20:measured_LRA=1.40:measured_thresh=-34.50:offset=0.25:linear=true:print_format=summary,aresample=48000"
     );
+  });
+
+  test("loudnorm後に48kHzへリサンプルし、プレーヤー非対応の高レートAACを防ぐ", () => {
+    // loudnormは内部で192k系へリサンプルするため、明示しないとAACが96kHz等で焼かれ
+    // 一般プレーヤーがデコードできず無音になる（回帰ガード）。
+    const args = buildMuxArgs({
+      visualLoop: "visual-loop.mp4",
+      audio: "ambient.wav",
+      output: "final.mp4",
+      durationSeconds: 60,
+      measured: {
+        inputI: "-24.10",
+        inputTp: "-3.20",
+        inputLra: "1.40",
+        inputThresh: "-34.50",
+        targetOffset: "0.25"
+      }
+    });
+
+    expect(args[args.indexOf("-af") + 1]).toMatch(/,aresample=48000$/u);
   });
 
   test("ffmpeg stderrからloudnorm測定JSONをパースする", () => {

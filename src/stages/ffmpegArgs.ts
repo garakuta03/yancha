@@ -60,7 +60,9 @@ export function buildMuxArgs(opts: BuildMuxArgsOptions): readonly string[] {
     "-b:a",
     "192k",
     "-af",
-    buildLoudnormApplyFilter(opts.measured),
+    // loudnormは内部で192k系へリサンプルする。明示しないとAACが96kHz等で焼かれ、
+    // 一般プレーヤーがデコードできず無音になるため、末尾で48kHzへ揃える。
+    `${buildLoudnormApplyFilter(opts.measured)},aresample=48000`,
     "-movflags",
     "+faststart",
     opts.output
