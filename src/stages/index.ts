@@ -4,13 +4,14 @@ import { AudioStage } from "./audio.js";
 import { PlaceholderStage } from "./placeholders.js";
 import { SceneStage } from "./scene.js";
 import { ThemeStage } from "./theme.js";
+import { VisualStage } from "./visual.js";
 
 export function createStageRunners(llmClient: LlmClient): readonly StageRunner[] {
   return [
     new ThemeStage(),
     new SceneStage(llmClient),
     new AudioStage(),
-    new PlaceholderStage("visual", "visual.meta.json", "scene.jsonから完全ループ映像を生成する予定です。", ["scene.json"], ["visual-loop.mp4"]),
+    new VisualStage(),
     new PlaceholderStage("video", "video.meta.json", "ffmpegでループ映像と環境音を尺に合わせて合成する予定です。", ["visual-loop.mp4", "ambient.wav"], ["final.mp4"]),
     new PlaceholderStage("metadata", "metadata.meta.json", "scene.jsonからタイトル、説明、タグ、サムネ案を生成する予定です。", ["scene.json"], ["metadata.json"]),
     new PlaceholderStage("checks", "checks.meta.json", "効能表現、固有性、音量などの自動チェックを実行する予定です。", ["metadata.json", "uniqueness.json", "final.mp4"], ["checks.json"]),
