@@ -25,6 +25,45 @@ export interface ThemeData {
   readonly tone: string;
 }
 
+export interface AudioLayer {
+  readonly id: string;
+  readonly type: "rain" | "drops";
+  readonly gain: number;
+}
+
+export interface VisualParams {
+  readonly particleCount: number;
+  readonly drift: number;
+  readonly brightness: number;
+  readonly loopSeconds: number;
+}
+
+export interface SceneData {
+  readonly sceneId: string;
+  readonly title: string;
+  readonly storyline: string;
+  readonly durationSeconds: number;
+  readonly seed: string;
+  readonly audio: {
+    readonly preset: "rain";
+    readonly layers: readonly AudioLayer[];
+  };
+  readonly visual: {
+    readonly preset: "particles";
+    readonly params: VisualParams;
+  };
+}
+
+export interface UniquenessData {
+  readonly videoId: string;
+  readonly seed: string;
+  readonly audioPreset: string;
+  readonly audioLayers: readonly string[];
+  readonly visualPreset: string;
+  readonly visualParams: Record<string, number | string>;
+  readonly createdAt: string;
+}
+
 export interface PlaceholderData {
   readonly status: "stub" | "manual-required";
   readonly message: string;
