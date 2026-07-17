@@ -30,8 +30,17 @@ echo "=== $(date -Iseconds) collect 開始 ===" >>"$LOG_FILE"
 # mise 経由で node にパスを通す（node のパスを直書きすると将来のバージョン更新で壊れるため）
 # ⚠️ node_modules/.bin/tsx は JS ではなく npm のシェルシムなので、
 #    `node node_modules/.bin/tsx` としてはいけない（SyntaxError になる）。シムを直接実行する。
-if command -v mise >/dev/null 2>&1; then
-  RUNNER=(mise exec --)
+#
+# ⚠️ cron の PATH は最小（/usr/bin:/bin 程度）で ~/.local/bin を含まないため、
+#    `command -v mise` だけでは mise を見つけられず node: not found で落ちる。
+#    絶対パス（$HOME/.local/bin/mise）も候補に入れて解決する。
+MISE_BIN="$(command -v mise || true)"
+if [ -z "$MISE_BIN" ] && [ -x "$HOME/.local/bin/mise" ]; then
+  MISE_BIN="$HOME/.local/bin/mise"
+fi
+
+if [ -n "$MISE_BIN" ]; then
+  RUNNER=("$MISE_BIN" exec --)
 else
   # mise が無い環境向けのフォールバック（node が PATH にある前提）
   RUNNER=()
