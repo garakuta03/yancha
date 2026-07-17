@@ -234,6 +234,16 @@ function sleep(ms: number): Promise<void> {
 }
 
 function createMockJsonResponse(prompt: string): unknown {
+  if (prompt.includes("metadata.json")) {
+    const storyline = extractPromptValue(prompt, "storyline") ?? "静かな夜の雨音と淡い粒子の動きを描きます。";
+    return {
+      title: "雨の夜にひらく静かなアンビエンス",
+      description: `${storyline}\n\n雨音と淡い粒子の動きを中心にした、作業前後や休憩時間にも流しやすいノーボイス環境動画です。`,
+      tags: ["雨音", "環境音", "ノーボイス", "アンビエンス", "リラックス"],
+      thumbnailPrompt: "暗い窓辺に細い雨筋が重なり、淡い粒子が静かに浮かぶサムネ案"
+    };
+  }
+
   const title = extractPromptValue(prompt, "タイトル") ?? "雨の夜のアンビエンス";
   return {
     sceneId: "mock-rain-night",

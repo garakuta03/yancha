@@ -2,6 +2,7 @@ import type { LlmClient } from "../clients/llm.js";
 import type { StageRunner } from "../types/pipeline.js";
 import { AudioStage } from "./audio.js";
 import { VideoStage } from "./video.js";
+import { MetadataStage } from "./metadata.js";
 import { PlaceholderStage } from "./placeholders.js";
 import { SceneStage } from "./scene.js";
 import { ThemeStage } from "./theme.js";
@@ -14,7 +15,7 @@ export function createStageRunners(llmClient: LlmClient): readonly StageRunner[]
     new AudioStage(),
     new VisualStage(),
     new VideoStage(),
-    new PlaceholderStage("metadata", "metadata.meta.json", "scene.jsonからタイトル、説明、タグ、サムネ案を生成する予定です。", ["scene.json"], ["metadata.json"]),
+    new MetadataStage(llmClient),
     new PlaceholderStage("checks", "checks.meta.json", "効能表現、固有性、音量などの自動チェックを実行する予定です。", ["metadata.json", "uniqueness.json", "final.mp4"], ["checks.json"]),
     new PlaceholderStage("upload", "upload.meta.json", "YouTubeへ限定公開アップロードする予定です。", ["final.mp4", "metadata.json", "checks.json"], ["upload.json"], "manual-required"),
     new PlaceholderStage("review", "review.meta.json", "限定公開URLとチェック結果を人間レビュー用にまとめる予定です。", ["upload.json", "checks.json", "license.json"], ["review.md"], "manual-required")

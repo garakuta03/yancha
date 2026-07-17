@@ -64,6 +64,13 @@ export interface UniquenessData {
   readonly createdAt: string;
 }
 
+export interface MetadataData {
+  readonly title: string;
+  readonly description: string;
+  readonly tags: readonly string[];
+  readonly thumbnailPrompt: string;
+}
+
 export interface PlaceholderData {
   readonly status: "stub" | "manual-required";
   readonly message: string;
