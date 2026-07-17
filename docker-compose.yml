@@ -11,6 +11,7 @@ services:
       OPENAI_API_KEY: ${OPENAI_API_KEY:-}
       COMFYUI_BASE_URL: ${COMFYUI_BASE_URL:-http://host.docker.internal:8188}
       FFMPEG_PATH: ${FFMPEG_PATH:-ffmpeg}
+      PUPPETEER_EXECUTABLE_PATH: ${PUPPETEER_EXECUTABLE_PATH:-/usr/bin/chromium}
     volumes:
       - ./assets:/app/assets
     command: ["pnpm", "run", "pipeline"]
