@@ -21,6 +21,13 @@
 ## 役割分担・ワークフロー
 - **ブレスト・設計はこのセッション（Claude）で行う。**
 - **実装・開発はCodexで行う。**
+- **設計→実装の受け渡し（標準手順）**:
+  1. Claudeで `brainstorming → spec（docs/superpowers/specs/）→ writing-plans（docs/superpowers/plans/）` を回す。
+  2. plan生成後、**Claudeのサブエージェント（subagent-driven-development / executing-plans）では実装しない**。
+     代わりに **plan.md（＋参照spec）をそのままCodexに渡して実装させる**。
+  3. **plan→指示書の中間層（Codex用の別ファイル）は作らない**。planが実装の唯一の入力。
+  4. Codex投入用プロンプトは `docs/operations/` に置く（例: [P0投入プロンプト](docs/operations/codex-p0投入プロンプト.md)）。
+  - ⚠️ writing-plansが出すplan冒頭の「use subagent-driven-development…」はClaude前提の定型文。Codex実装ではこの一文は無視する。
 - **タスク管理はGitHub Issue駆動**（`garakuta03/yancha`）。
 - **Issue・ラベル（タグ）は日本語で、わかりやすく管理する。**
 - **開発・マージは基本ローカルで行う。** feature ブランチを切り、ローカルで `main` にマージする（PRベースにしない）。
