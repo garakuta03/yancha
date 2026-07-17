@@ -7,8 +7,13 @@
   "exports": {
     ".": "./src/index.ts"
   },
+  "scripts": {
+    "test": "vitest run",
+    "build": "tsc --noEmit"
+  },
   "devDependencies": {
     "@types/node": "^20.14.12",
-    "typescript": "^5.5.4"
+    "typescript": "^5.5.4",
+    "vitest": "^4.1.10"
   }
 }

@@ -1,14 +1,13 @@
 export type StageId =
   | "theme"
-  | "script"
-  | "narration"
-  | "music"
-  | "audioMix"
+  | "scene"
+  | "audio"
   | "visual"
   | "video"
   | "metadata"
-  | "humanReview"
-  | "publish";
+  | "checks"
+  | "upload"
+  | "review";
 
 export interface StageArtifact<TData = unknown> {
   readonly videoId: string;
@@ -21,18 +20,9 @@ export interface ThemeData {
   readonly title: string;
   readonly keywords: readonly string[];
   readonly targetMinutes: number;
-  readonly format: "sleep-guide" | "healing-visual" | "sleep-story";
+  readonly format: "ambience";
   readonly audience: string;
   readonly tone: string;
-}
-
-export interface ScriptData {
-  readonly path: string;
-  readonly title: string;
-  readonly estimatedMinutes: number;
-  readonly safetyNotes: readonly string[];
-  readonly llmProvider: string;
-  readonly llmModel: string;
 }
 
 export interface PlaceholderData {

@@ -1,20 +1,18 @@
 import type { LlmClient } from "../clients/llm.js";
 import type { StageRunner } from "../types/pipeline.js";
 import { PlaceholderStage } from "./placeholders.js";
-import { ScriptStage } from "./script.js";
 import { ThemeStage } from "./theme.js";
 
-export function createStageRunners(llmClient: LlmClient): readonly StageRunner[] {
+export function createStageRunners(_llmClient: LlmClient): readonly StageRunner[] {
   return [
     new ThemeStage(),
-    new ScriptStage(llmClient),
-    new PlaceholderStage("narration", "narration.meta.json", "ナレーション音声生成はTTSの商用ライセンス確認後に接続します。", ["script.md"], ["narration.wav"]),
-    new PlaceholderStage("music", "music.meta.json", "音楽・環境音生成は商用利用可能な生成元を確定してから接続します。", ["theme.json"], ["bgm.wav", "ambient.wav"]),
-    new PlaceholderStage("audioMix", "audio-mix.meta.json", "ffmpegでナレーション、BGM、環境音を合成する予定です。", ["narration.wav", "bgm.wav", "ambient.wav"], ["mix.wav"]),
-    new PlaceholderStage("visual", "visual.meta.json", "ComfyUI HTTP APIで映像素材を生成する予定です。フェーズ0はMac完結を前提にします。", ["theme.json"], ["visual.mp4"]),
-    new PlaceholderStage("video", "video.meta.json", "ffmpegで映像と音声を尺に合わせて合成する予定です。", ["visual.mp4", "mix.wav"], ["final.mp4"]),
-    new PlaceholderStage("metadata", "metadata.meta.json", "タイトル、説明、タグ、サムネ案をLLMで生成する予定です。", ["script.md", "theme.json"], ["metadata.json"]),
-    new PlaceholderStage("humanReview", "human-review.meta.json", "人間レビューは自動化しません。品質、権利、効能表現を手動確認してください。", ["final.mp4", "metadata.json", "license.json"], ["review.json"], "manual-required"),
-    new PlaceholderStage("publish", "publish.meta.json", "投稿は初期は手動、将来はYouTube Data API v3で接続します。", ["final.mp4", "metadata.json", "review.json"], ["publish.json"], "manual-required")
+    new PlaceholderStage("scene", "scene.meta.json", "theme.jsonからscene.jsonとuniqueness.jsonを生成する予定です。", ["theme.json"], ["scene.json", "uniqueness.json"]),
+    new PlaceholderStage("audio", "audio.meta.json", "scene.jsonから環境音WAVを生成する予定です。", ["scene.json"], ["ambient.wav"]),
+    new PlaceholderStage("visual", "visual.meta.json", "scene.jsonから完全ループ映像を生成する予定です。", ["scene.json"], ["visual-loop.mp4"]),
+    new PlaceholderStage("video", "video.meta.json", "ffmpegでループ映像と環境音を尺に合わせて合成する予定です。", ["visual-loop.mp4", "ambient.wav"], ["final.mp4"]),
+    new PlaceholderStage("metadata", "metadata.meta.json", "scene.jsonからタイトル、説明、タグ、サムネ案を生成する予定です。", ["scene.json"], ["metadata.json"]),
+    new PlaceholderStage("checks", "checks.meta.json", "効能表現、固有性、音量などの自動チェックを実行する予定です。", ["metadata.json", "uniqueness.json", "final.mp4"], ["checks.json"]),
+    new PlaceholderStage("upload", "upload.meta.json", "YouTubeへ限定公開アップロードする予定です。", ["final.mp4", "metadata.json", "checks.json"], ["upload.json"], "manual-required"),
+    new PlaceholderStage("review", "review.meta.json", "限定公開URLとチェック結果を人間レビュー用にまとめる予定です。", ["upload.json", "checks.json", "license.json"], ["review.md"], "manual-required")
   ];
 }

@@ -5,7 +5,7 @@ import { loadConfig } from "./config.js";
 import { Orchestrator } from "./orchestrator.js";
 import type { StageId } from "./types/pipeline.js";
 
-const stageIds: readonly StageId[] = ["theme", "script", "narration", "music", "audioMix", "visual", "video", "metadata", "humanReview", "publish"];
+const stageIds: readonly StageId[] = ["theme", "scene", "audio", "visual", "video", "metadata", "checks", "upload", "review"];
 
 async function main(): Promise<void> {
   const args = process.argv.slice(2);
@@ -24,12 +24,6 @@ async function main(): Promise<void> {
       ...(fromStage ? { fromStage } : {}),
       ...(toStage ? { toStage } : {})
     });
-    return;
-  }
-
-  if (command === "stage:script") {
-    const videoId = readOption(args, "--video-id") ?? args[1] ?? createDefaultVideoId();
-    await orchestrator.run({ videoId, toStage: "script" });
     return;
   }
 

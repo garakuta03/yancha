@@ -21,8 +21,16 @@ describe("resolveVideoPaths", () => {
 
     expect(paths.videoDir).toBe(resolve("assets", "video-test"));
     expect(paths.themeJson).toBe(resolve("assets", "video-test", "theme.json"));
-    expect(paths.scriptMarkdown).toBe(resolve("assets", "video-test", "script.md"));
-    expect(paths.scriptMetaJson).toBe(resolve("assets", "video-test", "script.meta.json"));
+    expect(paths.sceneJson).toBe(resolve("assets", "video-test", "scene.json"));
+    expect(paths.uniquenessJson).toBe(resolve("assets", "video-test", "uniqueness.json"));
+    expect(paths.ambientWav).toBe(resolve("assets", "video-test", "ambient.wav"));
+    expect(paths.visualMp4).toBe(resolve("assets", "video-test", "visual-loop.mp4"));
+    expect(paths.finalMp4).toBe(resolve("assets", "video-test", "final.mp4"));
+    expect(paths.metadataJson).toBe(resolve("assets", "video-test", "metadata.json"));
+    expect(paths.checksJson).toBe(resolve("assets", "video-test", "checks.json"));
+    expect(paths.uploadJson).toBe(resolve("assets", "video-test", "upload.json"));
+    expect(paths.reviewMd).toBe(resolve("assets", "video-test", "review.md"));
     expect(paths.licenseJson).toBe(resolve("assets", "video-test", "license.json"));
+    expect(paths.logsDir).toBe(resolve("assets", "video-test", "logs"));
   });
 });

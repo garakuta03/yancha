@@ -5,7 +5,8 @@ export type ErrorCode =
   | "STAGE_NOT_IMPLEMENTED"
   | "ARTIFACT_INVALID"
   | "POLICY_VIOLATION"
-  | "CLIENT_ERROR";
+  | "CLIENT_ERROR"
+  | "FFMPEG_ERROR";
 
 export class YanchaError extends Error {
   readonly code: ErrorCode;
