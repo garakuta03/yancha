@@ -5,7 +5,7 @@ import { AudioStage } from "./audio.js";
 import { ChecksStage } from "./checks.js";
 import { VideoStage } from "./video.js";
 import { MetadataStage } from "./metadata.js";
-import { PlaceholderStage } from "./placeholders.js";
+import { ReviewStage } from "./review.js";
 import { SceneStage } from "./scene.js";
 import { ThemeStage } from "./theme.js";
 import { UploadStage } from "./upload.js";
@@ -27,6 +27,6 @@ export function createStageRunners(llmClient: LlmClient, config: AppConfig, opti
         return createYoutubeUploadClient(config);
       }
     }),
-    new PlaceholderStage("review", "review.meta.json", "限定公開URLとチェック結果を人間レビュー用にまとめる予定です。", ["upload.json", "checks.json", "license.json"], ["review.md"], "manual-required")
+    new ReviewStage()
   ];
 }

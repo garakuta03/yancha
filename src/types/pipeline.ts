@@ -82,13 +82,6 @@ export interface ChecksData {
   readonly results: readonly CheckResult[];
 }
 
-export interface PlaceholderData {
-  readonly status: "stub" | "manual-required";
-  readonly message: string;
-  readonly expectedInputs: readonly string[];
-  readonly expectedOutputs: readonly string[];
-}
-
 export interface PipelineContext {
   readonly videoId: string;
   readonly videoDir: string;
