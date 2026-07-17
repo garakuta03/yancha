@@ -4,7 +4,7 @@
 > （運用ルール: [CLAUDE.md](../../CLAUDE.md) §役割分担・ワークフロー）。
 >
 > 使い方: 下の「共通プロンプト」を最初に1回渡し、以後は「Task起動テンプレ」でTaskを1つずつ着手させる。
-> 着手順は plan §Task の依存に従う。**Task 0（Issue #19）から**。
+> 着手順は plan §Task の依存に従う。**Task 0（Issue #19、OPEN）から**。
 
 ---
 
@@ -21,6 +21,7 @@
 - ⚠️ plan 冒頭の「use subagent-driven-development…」は Claude 前提の定型文。無視してよい。
 
 ## 進め方
+- 最初に Issue #19 が OPEN であることを確認し、Task 0 から着手する。
 - plan の Task を1つずつ、依存順（各Taskの Files/Interfaces/Steps）に従って実装する。
 - 各 Step のチェックボックスを埋めながら進める。plan と設計に書かれていないスコープを足さない
   （設計§1「非ゴール」を厳守。P0は 雨1プリセット・シーン1種・60秒・限定公開まで）。
@@ -59,7 +60,16 @@
 | Task 8 | upload ステージ | #27 |
 | Task 9 | review サマリ ＋ E2E通し | #28 |
 
-依存: Task 0 → 1 が全体のブロッカー。Task 3 と 4 は並行可。5 は 3・4 に依存。7 は 5・6 に依存。8→9 は直列。
+依存:
+- Task 0（#19 OPEN）を最初に片付ける。
+- Task 1（#20）は Task 0 後。
+- Task 2（#21）は Task 0・1 後。
+- Task 3（#22）と Task 4（#23）は Task 1 後に並行可。
+- Task 5（#24）は Task 3・4 後。
+- Task 6（#25）は Task 0・2 後。
+- Task 7（#26）は Task 5・6 後。
+- Task 8（#27）は Task 7 後。
+- Task 9（#28）は Task 8 後。
 
 ## Task 起動テンプレ（Taskごとに渡す）
 
