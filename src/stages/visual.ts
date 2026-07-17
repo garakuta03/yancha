@@ -17,6 +17,8 @@ export class VisualStage implements StageRunner {
   readonly id = "visual" as const;
   readonly outputFile = "visual.meta.json";
 
+  constructor(private readonly executablePath?: string) {}
+
   async run(context: { videoId: string; videoDir: string }): Promise<StageArtifact<VisualStageData>> {
     const sceneArtifact = await readJson<StageArtifact<SceneData>>(join(context.videoDir, "scene.json"));
     const scene = sceneArtifact.data;
@@ -29,7 +31,8 @@ export class VisualStage implements StageRunner {
       params: scene.visual.params,
       loopSeconds,
       seed: visualSeed,
-      outPath
+      outPath,
+      executablePath: this.executablePath
     });
 
     const artifact: StageArtifact<VisualStageData> = {

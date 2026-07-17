@@ -16,6 +16,7 @@ export interface AppConfig {
   };
   readonly comfyuiBaseUrl: string;
   readonly ffmpegPath: string;
+  readonly chromeExecutablePath?: string;
   readonly youtube: {
     readonly clientId?: string;
     readonly clientSecret?: string;
@@ -62,6 +63,7 @@ export function loadConfig(env: NodeJS.ProcessEnv = process.env, options: LoadCo
     },
     comfyuiBaseUrl: valueOrDefault(env.COMFYUI_BASE_URL, "http://127.0.0.1:8188"),
     ffmpegPath: valueOrDefault(env.FFMPEG_PATH, "ffmpeg"),
+    ...(env.PUPPETEER_EXECUTABLE_PATH ? { chromeExecutablePath: env.PUPPETEER_EXECUTABLE_PATH } : {}),
     youtube: {
       ...(env.YOUTUBE_CLIENT_ID ? { clientId: env.YOUTUBE_CLIENT_ID } : {}),
       ...(env.YOUTUBE_CLIENT_SECRET ? { clientSecret: env.YOUTUBE_CLIENT_SECRET } : {}),

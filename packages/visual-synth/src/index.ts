@@ -26,6 +26,7 @@ export interface RenderLoopOptions {
   readonly width?: number;
   readonly height?: number;
   readonly ffmpegPath?: string;
+  readonly executablePath?: string | undefined;
 }
 
 export interface SignalStatsSummary {
@@ -75,7 +76,7 @@ export async function renderLoop(opts: RenderLoopOptions): Promise<void> {
   const server = await startSceneServer();
   let browser: Browser | undefined;
   try {
-    browser = await launchRenderBrowser();
+    browser = await launchRenderBrowser({ executablePath: opts.executablePath });
     const page = await browser.newPage();
     await page.setViewport({ width, height, deviceScaleFactor: 1 });
     await page.goto(`${server.origin}/particles/index.html`, { waitUntil: "networkidle0" });

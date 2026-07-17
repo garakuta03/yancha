@@ -16,7 +16,7 @@ export function createStageRunners(llmClient: LlmClient, config: AppConfig, opti
     new ThemeStage(),
     new SceneStage(llmClient),
     new AudioStage(),
-    new VisualStage(),
+    new VisualStage(config.chromeExecutablePath),
     new VideoStage(),
     new MetadataStage(llmClient),
     new ChecksStage(),
